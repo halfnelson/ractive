@@ -9,11 +9,18 @@ module.exports = function ( grunt) {
 		moduleTemplate = grunt.file.read( templateDir + 'module.html' )
 
 	function setLevels(filepath){
-    	var levels = path.relative( path.resolve( filepath ), path.resolve( testDir ) );
+    	var levels = unixifyPath(path.relative( path.resolve( filepath ), path.resolve( testDir ) ));
 		levels = levels.substring( 0, levels.length-2 );
     	grunt.config( 'levels', levels );		
 	}
-
+	
+var unixifyPath = function(filepath) {
+		if (process.platform === 'win32') {
+			return filepath.replace(/\\/g, '/');
+		} else {
+			return filepath;
+		}
+	};
 	return {
 		release: {
 			files: [{
@@ -44,10 +51,10 @@ module.exports = function ( grunt) {
 							.replace(/\.js$/, ''),
 						all = grunt.config('allTestModules') || [];
 
-		        	all.push( module );
+		        	all.push( unixifyPath(module) );
 		        	grunt.config( 'allTestModules', all );
-
-					setLevels( filepath ); //sets grunt.config('levels')
+				
+					setLevels(   filepath ); //sets grunt.config('levels')
 		        	grunt.config( 'moduleName', module );
 					grunt.config( 'runTestsjs', runTestsjs );
 
@@ -63,8 +70,8 @@ module.exports = function ( grunt) {
 				dest: testsDir
 			}],
 			options: {
-		        process: function(src, filepath) {
-					setLevels( filepath );
+		        process: function(src, filepath) {  
+		 			setLevels(filepath );
 		        	return grunt.template.process(src);
 		        }				
 			}
